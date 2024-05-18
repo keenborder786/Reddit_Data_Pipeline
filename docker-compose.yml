@@ -6,19 +6,20 @@ x-airflow-common:
     context: .
     dockerfile: Dockerfile
   image: custom-airflow:2.7.1-python3.9
-  env_file:
-    - airflow.env
+  networks:
+    iceberg_net:
   volumes:
     - ./config:/opt/airflow/config
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./pipelines:/opt/airflow/pipelines
     - ./utils:/opt/airflow/utils
-    # - ./airflow.cfg:/opt/airflow/airflow.cfg
+    - ./airflow.cfg:/opt/airflow/airflow.cfg
     - ./requirements.txt:/opt/airflow/requirements.txt
   depends_on:
     - postgres
     - redis
+    - spark-iceberg
 
 services:
   postgres:
@@ -28,11 +29,15 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: airflow_reddit
       POSTGRES_PORT: 5432
+    networks:
+      iceberg_net:
     ports:
       - "5432:5432"
 
   redis:
     image: redis:latest
+    networks:
+      iceberg_net:
     ports:
       - "6379:6379"
 
@@ -55,6 +60,7 @@ services:
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    
   
   spark-iceberg:
     container_name: spark-iceberg

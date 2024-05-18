@@ -22,3 +22,4 @@ with DAG('spark_reddit_pipeline',
         py_files='/opt/airflow/utils/constants.py',
         conn_id = 'spark-iceberg'
     )
+    submit_job
