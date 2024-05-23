@@ -2,6 +2,7 @@ from typing import Dict,List
 import sys
 sys.path.insert(0,'/opt/airflow')
 from utils.constants import SPARK_MASTER,SECRET,CLIENT_ID,USER_AGENT,SEARCH_QUERY
+from datetime import datetime
 import praw
 from pyspark.sql import SparkSession
 
@@ -47,6 +48,22 @@ def spark_process_load_reddit_post(master_name:str,
                 created_at TIMESTAMP
             )""")
     df = spark.sql('SELECT * FROM reddit.posts').show()
+    for instance in data:
+        spark.sql(f"""
+        INSERT INTO reddit.posts 
+        (post_subreddit, post_title, post_content, post_score, post_id, post_url, post_author, created_at)
+        VALUES (
+        '{instance['post_subreddit']}', 
+        '{instance['post_title']}', 
+        '{instance['post_content']}', 
+        {instance['post_score']}, 
+        '{instance['post_id']}',
+        '{instance['post_url']}', 
+        '{instance['post_author']}',
+        TO_TIMESTAMP('{datetime.now()}','yyyy-MM-dd HH:mm:ss.SSSSSS')
+        )
+        """)
+    df = spark.sql('SELECT * FROM reddit.posts LIMIT 1').show()
     return df
 
 if __name__ == '__main__':

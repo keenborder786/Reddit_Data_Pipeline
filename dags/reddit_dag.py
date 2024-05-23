@@ -21,6 +21,7 @@ with DAG('spark_reddit_pipeline',
     spark_job = SparkSubmitOperator(
         task_id = 'reddit_pipeline',
         application = '/opt/airflow/pipelines/reddit_pipeline.py',
+        py_files='/opt/airflow/utils/constants.py',
         conn_id = 'spark-master',
         verbose = True
     )
