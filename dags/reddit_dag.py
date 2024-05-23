@@ -1,25 +1,33 @@
 from airflow import DAG
-from airflow.providers.apache.spark.operators.spark.submit import SparkSubmitOperator
+from airflow.operators.python import PythonOperator
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from datetime import datetime
-import os
-import sys
 
 
 default_args  = {
     'owner': 'Keenborder',
-    'start_date': datetime(2024,5,18)
+    'start_date': datetime(2024,1,1)
 }
-
-
 
 with DAG('spark_reddit_pipeline',
         default_args=default_args,
-        schedule_interval='@dialy') as dag:
+        catchup=False,
+        schedule_interval='@daily') as dag:
     
-    submit_job = SparkSubmitOperator(
+    start = PythonOperator(
+    task_id="start",
+    python_callable = lambda: print("Jobs started"))
+
+    spark_job = SparkSubmitOperator(
         task_id = 'reddit_pipeline',
         application = '/opt/airflow/pipelines/reddit_pipeline.py',
         py_files='/opt/airflow/utils/constants.py',
-        conn_id = 'spark-iceberg'
+        conn_id = 'spark-master',
+        verbose = True
     )
-    submit_job
+    end = PythonOperator(
+    task_id="end",
+    python_callable = lambda: print("Jobs completed successfully"),
+    dag=dag
+)
+    start >> spark_job >> end
