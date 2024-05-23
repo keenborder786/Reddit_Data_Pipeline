@@ -5,9 +5,15 @@ x-airflow-common:
   build:
     context: .
     dockerfile: Dockerfile
-  image: custom-airflow:2.7.1-python3.9
+  image: custom-airflow:2.7.1-python3.11
   networks:
     iceberg_net:
+  environment:
+    - SECRET=CmOuJLlvJPI7cw_H2jJ6al2CmRn3SA
+    - CLIENT_ID=ZzVY5KrsCcxcqeJVJr4YOQ
+    - USER_AGENT=extraction_by_keenborder
+    - SEARCH_QUERY=LangChain
+    - SPARK_MASTER=spark-iceberg:7077
   volumes:
     - ./config:/opt/airflow/config
     - ./dags:/opt/airflow/dags
@@ -16,6 +22,7 @@ x-airflow-common:
     - ./utils:/opt/airflow/utils
     - ./config/airflow.cfg:/opt/airflow/airflow.cfg
     - ./requirements.txt:/opt/airflow/requirements.txt
+    - ./spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
   depends_on:
     - postgres
     - redis
@@ -50,17 +57,20 @@ services:
   airflow-webserver:
     <<: *airflow-common
     command: webserver
+    restart: on-failure
     ports:
       - "8080:8080"
 
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    restart: on-failure
+  
 
   airflow-worker:
     <<: *airflow-common
     command: celery worker
-    
+    restart: on-failure
   
   spark-iceberg:
     container_name: spark-iceberg
@@ -81,6 +91,7 @@ services:
       - 8081:8080
       - 10000:10000
       - 10001:10001
+      - 4040:4040
   
   rest:
     image: tabulario/iceberg-rest

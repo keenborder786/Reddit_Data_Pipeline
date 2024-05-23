@@ -1,4 +1,6 @@
 from typing import Dict,List
+import sys
+sys.path.insert(0,'/opt/airflow')
 from utils.constants import SPARK_MASTER,SECRET,CLIENT_ID,USER_AGENT,SEARCH_QUERY
 import praw
 from pyspark.sql import SparkSession
@@ -30,20 +32,20 @@ def spark_process_load_reddit_post(master_name:str,
                                    client_secret:str,
                                    user_agent:str,
                                    search_query:str):
-    spark = SparkSession.builder.remote(f"sc://{master_name}:7077").getOrCreate()
+    spark = SparkSession.builder.master(f"spark://{master_name}").getOrCreate()
     data = extract_reddit_post(client_id,client_secret,user_agent,search_query)
     spark.sql("""CREATE DATABASE IF NOT EXISTS reddit 
     """)
-    spark.sql("""CREATE TABLE IF NOT EXISTS reddit.posts
-                post_subreddit string,
-                post_title string,
-                post_content string,
-                post_score string,
-                post_id string,
-                post_url string,
-                post_author string,
-              "created_at" timestamp    
-    """)
+    spark.sql("""CREATE TABLE IF NOT EXISTS reddit.posts (
+                post_subreddit STRING,
+                post_title STRING,
+                post_content STRING,
+                post_score STRING,
+                post_id STRING,
+                post_url STRING,
+                post_author STRING,
+                created_at TIMESTAMP
+            )""")
     df = spark.sql('SELECT * FROM reddit.posts').show()
     return df
 
