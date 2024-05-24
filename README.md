@@ -7,7 +7,9 @@
 
 - Start the Services
 
-
+```bash
+docker-compose up -d --build
+```
 
 
 
