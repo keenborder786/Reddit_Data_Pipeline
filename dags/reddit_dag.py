@@ -6,13 +6,13 @@ from datetime import datetime
 
 default_args  = {
     'owner': 'Keenborder',
-    'start_date': datetime(2024,1,1)
+    'start_date': datetime(2024,5,24)
 }
 
 with DAG('spark_reddit_pipeline',
         default_args=default_args,
-        catchup=False,
-        schedule_interval='@daily') as dag:
+        catchup=True,
+        schedule_interval='@hourly') as dag:
     
     start = PythonOperator(
     task_id="start",
