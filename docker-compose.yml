@@ -9,8 +9,8 @@ x-airflow-common:
   networks:
     iceberg_net:
   environment:
-    - SECRET=CmOuJLlvJPI7cw_H2jJ6al2CmRn3SA
-    - CLIENT_ID=ZzVY5KrsCcxcqeJVJr4YOQ
+    - SECRET=<SECRET>
+    - CLIENT_ID=<CLIENT_ID>
     - USER_AGENT=extraction_by_keenborder
     - SEARCH_QUERY=LangChain
     - SPARK_MASTER=spark-iceberg:7077
@@ -89,6 +89,8 @@ services:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
+    volumes:
+      - ./spark/test.ipynb:/home/iceberg/notebooks/test.ipynb
     ports:
       - 8888:8888
       - 8081:8080

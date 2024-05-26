@@ -47,6 +47,7 @@ def spark_process_load_reddit_post(master_name:str,
             USING iceberg
             PARTITIONED BY (days(created_at))
             """)
+    spark.sql('SELECT * FROM reddit.posts LIMIT 1').show()
     schema = spark.table("reddit.posts").schema
     df = spark.createDataFrame(data, schema)
     df.writeTo("reddit.posts").append()
